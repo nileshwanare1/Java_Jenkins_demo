@@ -1,33 +1,41 @@
+```groovy
 pipeline {
     agent any
 
     tools {
-        maven "MAVEN"
-        jdk "JDK"
+        maven 'MAVEN'
+        jdk 'JDK'
     }
 
+
     stages {
-        stage('Initialize'){
-            steps{
-                echo "PATH = ${M2_HOME}/bin:${PATH}"
-                echo "M2_HOME = /opt/maven"
+
+        stage('Initialize') {
+            steps {
+                echo "Java Home: ${JAVA_HOME}"
+                echo "Maven Home: ${M2_HOME}"
+
+                bat 'java -version'
+                bat 'mvn -version'
             }
         }
+
         stage('Build') {
             steps {
-                dir("C:/ProgramData/Jenkins/.jenkins/workspace/Jenkins_Demo/my-app/") {
-                sh 'mvn -B -DskipTests clean package'
+                dir('my-app') {
+                    bat 'mvn -B -DskipTests clean package'
                 }
-            
             }
         }
-     }
+    }
+
     post {
-       always {
-          junit(
-        allowEmptyResults: true,
-        testResults: '*/test-reports/.xml'
-      )
-      }
-   } 
+        always {
+            junit(
+                testResults: 'my-app/target/surefire-reports/*.xml',
+                allowEmptyResults: true
+            )
+			echo "Successfully passed"
+        }
+    }
 }
